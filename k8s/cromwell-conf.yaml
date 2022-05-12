@@ -1,0 +1,21 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cromwell-cm
+  namespace: cromwell
+data:
+  cromwell.conf: |
+    k8s { auths = [{ name = "k8sauth", scheme = "incluster" }] }
+    backend {
+      default = "k8s"
+      providers { k8s {
+          actor-factory = "cromwell.backend.impl.k8s.K8sBackendLifecycleActorFactory"
+          config {
+            root = "/cromwell_root/cromwell"
+            auth = "k8sauth"
+            namespace = "cromwell"
+            pvcName = "cromwell-pvc"
+            k8sServiceAccountName = "cromwell-sa"
+          }
+      }}
+    }

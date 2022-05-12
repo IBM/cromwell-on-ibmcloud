@@ -1,0 +1,35 @@
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: input-downloader
+  namespace: cromwell
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      serviceAccount: cromwell-sa
+      restartPolicy: Never
+      containers:
+      - name: aws-cli
+        image: amazon/aws-cli
+        workingDir: /tmp
+        imagePullPolicy: "Always"
+        volumeMounts:
+        - name: cromwell-pvc
+          mountPath: /cromwell_root
+        command:
+        - bash
+        - -c
+        - |
+          mkdir -p /cromwell_root/inputs/hg38_wgs_scattered_calling_intervals
+          aws --no-sign-request s3 cp --recursive s3://gatk-test-data/intervals/hg38_wgs_scattered_calling_intervals /cromwell_root/inputs/hg38_wgs_scattered_calling_intervals
+          aws --no-sign-request s3 cp s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bam /cromwell_root/inputs/
+          aws --no-sign-request s3 cp s3://gatk-test-data/wgs_bam/NA12878_24RG_hg38/NA12878_24RG_small.hg38.bai /cromwell_root/inputs/
+          aws --no-sign-request s3 cp s3://broad-references/hg38/v0/Homo_sapiens_assembly38.dict /cromwell_root/inputs/
+          aws --no-sign-request s3 cp s3://broad-references/hg38/v0/Homo_sapiens_assembly38.fasta /cromwell_root/inputs/
+          aws --no-sign-request s3 cp s3://broad-references/hg38/v0/Homo_sapiens_assembly38.fasta.fai /cromwell_root/inputs/
+          find /cromwell_root/inputs/hg38_wgs_scattered_calling_intervals -type f > /cromwell_root/inputs/intervals.txt
+      volumes:
+        - name: cromwell-pvc
+          persistentVolumeClaim:
+            claimName: cromwell-pvc

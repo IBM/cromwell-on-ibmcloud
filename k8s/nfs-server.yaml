@@ -1,0 +1,54 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: cromwell-nfs-server
+  namespace: kube-system
+spec:
+  type: ClusterIP  # use "LoadBalancer" to get a public ip
+  selector:
+    app: cromwell-nfs-server
+  ports:
+    - name: tcp-2049
+      port: 2049
+      protocol: TCP
+    - name: udp-111
+      port: 111
+      protocol: UDP
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cromwell-nfs-server
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cromwell-nfs-server
+  template:
+    metadata:
+      labels:
+        app: cromwell-nfs-server
+    spec:
+      containers:
+        - name: nfs-server
+          image: itsthenetwork/nfs-server-alpine:latest
+          securityContext:
+            privileged: true
+          env:
+            - name: SHARED_DIRECTORY
+              value: "/mnt/data"
+          volumeMounts:
+            - mountPath: /mnt/data
+              name: nfsblockvolume
+          ports:
+            - name: tcp-2049
+              containerPort: 2049
+              protocol: TCP
+            - name: udp-111
+              containerPort: 111
+              protocol: UDP
+      volumes:
+        - name: nfsblockvolume
+          persistentVolumeClaim:
+            claimName: block-1024gb

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: block-1024gb
+  namespace: kube-system
+spec:
+  storageClassName: ibmc-vpc-block-10iops-tier # specific to IBM Cloud
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1024Gi

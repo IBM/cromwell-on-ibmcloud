@@ -59,7 +59,7 @@ spec:
       serviceAccount: cromwell-sa
       containers:
         - name: cromwell
-          image: tyoshimura8869/cromwell-k8s:78
+          image: icr.io/cromwell-on-ibmcloud/cromwell:78-k8s
           workingDir: /tmp
           env:
             - name: JAVA_OPTS
